@@ -109,6 +109,6 @@ void AMP_extractor()
     resultTree->Write();
     outFile->Close();
     delete outFile;
-    std::cout << "\n[INFO] Resultados guardados en 'RMS_results_errors.root'\n";
+    std::cout << "\n[INFO] Resultados guardados en 'AMP_results_errors.root'\n";
 
 }
