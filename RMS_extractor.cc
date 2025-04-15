@@ -1,8 +1,8 @@
 void RMS_extractor()
 {
     #include <tuple>
-    std::vector<int> attenuations = {36, 40, 46, 50, 56, 60, 66};
-    std::string basePath = "/media/rene/Data/LGAD/FNAL-pulse-analysis/paper/input-files/";
+    std::vector<int> attenuations = {36, 40, 46, 50, 56, 60, 66};//{40, 46, 50, 56, 60, 66}; 
+    std::string basePath = "/media/rene/Data/4d-tracking/paper/input-files/FNAL_BoardCH8/"; //"/media/rene/Data/LGAD/converted/FNAL_CH8/";
     std::string filePrefix = "converted_runs_";
     std::string fileSuffix = "dB-att_6800mV_converted.root";
 
@@ -15,10 +15,10 @@ void RMS_extractor()
         {60, ""},
         {66, ""}
     };
-    const int bins=150;
+    const int bins=200;
     std::map<int, std::tuple<int, double, double>> options = {
         {36, std::make_tuple(bins, 0, 4)},
-        {40, std::make_tuple(bins, 0, 12)},
+        {40, std::make_tuple(bins, 0, 13)},
         {46, std::make_tuple(bins, 0, 13)},
         {50, std::make_tuple(bins, 0, 8)},
         {56, std::make_tuple(bins, 0, 7)},
@@ -57,7 +57,7 @@ void RMS_extractor()
         hist->Draw();
 
         TSpectrum* spectrum = new TSpectrum(10);
-        int nPeaks = spectrum->Search(hist, 1.1, "", 0.1);
+        int nPeaks = spectrum->Search(hist, 1.1, "", 0.05);
         double* xPeaks = spectrum->GetPositionX();
         double* yPeaks = spectrum->GetPositionY();
 
@@ -82,6 +82,10 @@ void RMS_extractor()
         TF1* fitFunc = new TF1("fitFunc",
             "[0]*TMath::Gaus(x,[1],[2],false) + [3]*TMath::Gaus(x,[4],[5],false)", xmin, xmax);
         fitFunc->SetParameters(p0_init, p1_init, p2_init, p3_init, p4_init, p5_init);
+        fitFunc->SetParLimits(1, 0, 500);
+        fitFunc->SetParLimits(2, 0, 500);
+        fitFunc->SetParLimits(4, 0, 500);
+        fitFunc->SetParLimits(5, 0, 500);
 
         hist->Fit(fitFunc, "RQ");
 
@@ -108,9 +112,13 @@ void RMS_extractor()
         double sigma = std::sqrt(x2 - mu * mu);
 
         std::cout << att << " dB: μ = " << mu << " mV, σ = " << sigma << " mV" << std::endl;
-        TArrayD arr(2);
+        TArrayD arr(6);
         arr[0] = mu;
         arr[1] = sigma;
+        arr[2] = p1;
+        arr[3] = p2;
+        arr[4] = p4;
+        arr[5] = p5;
         results.push_back(arr);
 
 
@@ -126,14 +134,23 @@ void RMS_extractor()
     TFile* outFile = new TFile("RMS_results_errors.root", "RECREATE");
     TTree* resultTree = new TTree("results", "RMS y su error por atenuación");
     double attenuation, RMS_err, RMS;
+    double p1_val, p2_val, p4_val, p5_val;
     resultTree->Branch("attenuation", &attenuation);
     resultTree->Branch("RMS", &RMS);
     resultTree->Branch("RMS_err", &RMS_err);
+    resultTree->Branch("p1", &p1_val, "p1/D");
+    resultTree->Branch("p2", &p2_val, "p2/D");
+    resultTree->Branch("p4", &p4_val, "p4/D");
+    resultTree->Branch("p5", &p5_val, "p5/D");
     
     for (size_t i = 0; i < results.size(); ++i) {
         attenuation = attenuations[i];
         RMS       = results[i][0];
         RMS_err   = results[i][1];
+        p1_val      = results[i][2];
+        p2_val      = results[i][3];
+        p4_val      = results[i][4];
+        p5_val      = results[i][5];
         resultTree->Fill();
     }
 

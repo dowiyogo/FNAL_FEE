@@ -1,8 +1,8 @@
 void jitter_extractor_multiple()
 {
     #include <tuple>
-    std::vector<int> attenuations = {36, 40, 46, 50, 56, 60, 66};
-    std::string basePath = "/media/rene/Data/LGAD/FNAL-pulse-analysis/paper/input-files/";
+    std::vector<int> attenuations = {36, 40, 46, 50, 56, 60, 66};//{40, 46, 50, 56, 60, 66};
+    std::string basePath = "/media/rene/Data/4d-tracking/paper/input-files/FNAL_BoardCH8/";//"/media/rene/Data/LGAD/converted/FNAL_CH8/";
     std::string filePrefix = "converted_runs_";
     std::string fileSuffix = "dB-att_6800mV_converted.root";
 
@@ -19,12 +19,12 @@ void jitter_extractor_multiple()
     const int bins=200;
     std::map<int, std::tuple<int, double, double>> options = {
         {36, std::make_tuple(bins, 1.84E-9, 1.99E-9)},
-        {40, std::make_tuple(bins, 0.92E-9, 1.13E-9)},
-        {46, std::make_tuple(bins, 1.12E-9, 1.3E-9)},
-        {50, std::make_tuple(bins, 1E-9, 1.25E-9)},
-        {56, std::make_tuple(bins, 1.1E-9, 1.5E-9)},
-        {60, std::make_tuple(bins, 1E-9, 1.45E-9)},
-        {66, std::make_tuple(bins, 1E-9, 1.8E-9)}
+        {40, std::make_tuple(bins, 2.4E-9, 2.6E-9)},
+        {46, std::make_tuple(bins, 4.2E-9, 4.4E-9)},
+        {50, std::make_tuple(bins, 2.5E-9, 2.75E-9)},
+        {56, std::make_tuple(bins, 4.2E-9, 4.6E-9)},
+        {60, std::make_tuple(bins, 2.5E-9, 2.95E-9)},
+        {66, std::make_tuple(bins, 4E-9, 5E-9)}
     };
 
     std::vector<TArrayD> momentResults;  // Guardar {mu, sigma}
@@ -58,7 +58,7 @@ void jitter_extractor_multiple()
         hist->Draw();
 
         TSpectrum* spectrum = new TSpectrum(10);
-        int nPeaks = spectrum->Search(hist, 2, "", 0.05);
+        int nPeaks = spectrum->Search(hist, 1.5, "", 0.1);
         double* xPeaks = spectrum->GetPositionX();
         double* yPeaks = spectrum->GetPositionY();
 

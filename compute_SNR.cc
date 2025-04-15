@@ -7,6 +7,7 @@ void compute_SNR() {
 
     double att_a, amp, amp_err;
     double att_r, rms, rms_err;
+    double p1, p2, p4, p5;
 
     t_amp->SetBranchAddress("attenuation", &att_a);
     t_amp->SetBranchAddress("amp", &amp);
@@ -15,6 +16,10 @@ void compute_SNR() {
     t_rms->SetBranchAddress("attenuation", &att_r);
     t_rms->SetBranchAddress("RMS", &rms);
     t_rms->SetBranchAddress("RMS_err", &rms_err);
+    t_rms->SetBranchAddress("p1", &p1);
+    t_rms->SetBranchAddress("p2", &p2);
+    t_rms->SetBranchAddress("p4", &p4);
+    t_rms->SetBranchAddress("p5", &p5);
 
     // Salida
     TFile *f_out = new TFile("SNR_results.root", "RECREATE");
@@ -30,22 +35,32 @@ void compute_SNR() {
         std::cerr << "ERROR: los árboles tienen diferente número de entradas." << std::endl;
         return;
     }
-
+   
     for (Long64_t i = 0; i < n; ++i) {
         t_amp->GetEntry(i);
         t_rms->GetEntry(i);
-
+        
+        double rms_sel = 0.0;
+            // Obtener el jitter como el mínimo de RMS, p1 y p4
+        rms_sel = std::min({rms,p1,p4});    
+            // Seleccionar la dispersión correspondiente al valor mínimo
+        double rms_err_sel = 0.0;
+        if (rms_sel == rms) rms_err_sel = rms_err ;
+        else if (rms_sel == p1) rms_err_sel = p2;
+        else if (rms_sel == p4) rms_err_sel = p5;
+        std::cout << att_a << " dB: rms=" << rms << " p1=" << p1 <<" p4="<<p4 << std::endl;
+        std::cout << att_a << " dB: rms_sel = " << rms_sel << " +/- " << rms_err_sel << std::endl;
         if (att_a != att_r) {
             std::cerr << "ERROR: las atenuaciones no coinciden en la entrada " << i << std::endl;
             continue;
         }
 
         attenuation = att_a;
-        snr = amp / rms;
+        snr = amp / rms_sel;
 
         snr_err = std::sqrt(
-            std::pow(amp_err / rms, 2) +
-            std::pow((amp * rms_err) / (rms * rms), 2)
+            std::pow(amp_err / rms_sel, 2) +
+            std::pow((amp * rms_err_sel) / (rms_sel * rms_sel), 2)
         );
 
         t_out->Fill();

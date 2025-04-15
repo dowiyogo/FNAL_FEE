@@ -41,9 +41,10 @@ void plot_jitter_vs_SNR() {
     for (Long64_t i = 0; i < nEntries; ++i) {
         snrTree->GetEntry(i);
         jitterTree->GetEntry(i);
-
+        double jitter_raw = 0.0;
         // Obtener el jitter como el mínimo de sigma, p2 y p5
-        double jitter_raw = std::min({sigma, p2, p5});
+        jitter_raw = std::min({sigma, p2, p5});
+
         double jitter = jitter_raw * 1e12; // convertir a ps
 
         // Seleccionar el error correspondiente al valor mínimo
@@ -51,6 +52,11 @@ void plot_jitter_vs_SNR() {
         if (jitter_raw == sigma) jitter_err = sigma_err * 1e12;
         else if (jitter_raw == p2) jitter_err = err_p2 * 1e12;
         else if (jitter_raw == p5) jitter_err = err_p5 * 1e12;
+        
+        if (jitter_err < 1e-3 || jitter < 1){ // checkea si hay sobreajuste
+        jitter = sigma * 1e12;
+        jitter_err = sigma_err*1e12;
+        }
 
         x.push_back(snr);
         ex.push_back(snr_err);
@@ -68,7 +74,7 @@ void plot_jitter_vs_SNR() {
     graph->SetMarkerStyle(20);
     graph->SetMarkerColor(kBlue);
 
-    TF1* fitFunc = new TF1("fitFunc", "[0]/x + [1]", 10, 420);
+    TF1* fitFunc = new TF1("fitFunc", "[0]/x + [1]", 1, 500);
     fitFunc->SetParameters(1, 1);
     graph->Fit(fitFunc, "R");
 

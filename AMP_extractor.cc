@@ -2,7 +2,7 @@ void AMP_extractor()
 {
     #include <tuple>
     std::vector<int> attenuations = {36, 40, 46, 50, 56, 60, 66};
-    std::string basePath = "/media/rene/Data/LGAD/FNAL-pulse-analysis/paper/input-files/";
+    std::string basePath = "/media/rene/Data/4d-tracking/paper/input-files/FNAL_BoardCH8/";
     std::string filePrefix = "converted_runs_";
     std::string fileSuffix = "dB-att_6800mV_converted.root";
 
@@ -15,15 +15,15 @@ void AMP_extractor()
         {60, ""},
         {66, ""}
     };
-    const int bins=50;
+    const int bins=40;
     std::map<int, std::tuple<int, double, double>> options = {
-        {36, std::make_tuple(bins, 791, 799)},
-        {40, std::make_tuple(bins, 320, 390)},
-        {46, std::make_tuple(bins, 198, 228)},
-        {50, std::make_tuple(bins, 140, 175)},
-        {56, std::make_tuple(bins, 60, 100)},
-        {60, std::make_tuple(bins, 40, 70)},
-        {66, std::make_tuple(bins, 10, 50)}
+        {36, std::make_tuple(bins, 792, 799)},
+        {40, std::make_tuple(bins, 313, 350)},
+        {46, std::make_tuple(bins, 188, 225)},
+        {50, std::make_tuple(bins, 138, 168)},
+        {56, std::make_tuple(bins, 52, 91)},
+        {60, std::make_tuple(bins, 38, 68)},
+        {66, std::make_tuple(bins, 7, 45)}
     };
 
     std::vector<TArrayD> results;  // Guardar {mu, sigma}
@@ -53,7 +53,7 @@ void AMP_extractor()
         TCanvas* c = new TCanvas(canvasName.c_str(), canvasName.c_str(), 800, 600);
         canvases.push_back(c);
 
-        hist->SetTitle((std::to_string(att) + "dB Attenuation Config.; RMS (mV); #Measurements").c_str());
+        hist->SetTitle((std::to_string(att) + "dB Attenuation Config.; Amplitude (mV); #Measurements").c_str());
         hist->Draw();
 
         double p0_init = hist->GetMaximumBin();
@@ -63,6 +63,7 @@ void AMP_extractor()
         TF1* fitFunc = new TF1("fitFunc",
             "[0]*TMath::Gaus(x,[1],[2],false)", xmin, xmax);
         fitFunc->SetParameters(p0_init, p1_init, p2_init);
+        fitFunc->SetParLimits(2, 0, 20);
 
         hist->Fit(fitFunc, "RQ");
 
