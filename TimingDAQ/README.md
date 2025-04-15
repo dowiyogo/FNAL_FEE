@@ -1,4 +1,4 @@
-# Timing DAQ repository
+# Timing DAQ repository (USM version)
 [Original Repository](https://github.com/CMS-MTD/TimingDAQ)
 
 - [Quick start](#quick-start)
