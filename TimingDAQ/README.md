@@ -1,4 +1,5 @@
 # Timing DAQ repository
+[original repository](https://github.com/CMS-MTD/TimingDAQ)
 
 - [Quick start](#quick-start)
   * [Installation](#installation)
